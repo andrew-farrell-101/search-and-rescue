@@ -73,16 +73,24 @@ class GridWorldEnv(Env):
         # each observation is the location of A1 and location of A2. Locations of
         # the hazards (H) and points of interest (V) remain constant
         self._agent_locations = np.array(list(zip(*np.where(self.desc == b'A'))))
-        self.observation_space = spaces.Dict({("agent" + str(i + 1)): arr for i, arr in enumerate(self._agent_locations)})
+        # Observations are dictionaries with the agent's and the target's location.
+        # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
+        self.observation_space = spaces.Dict(
+            {
+                "agent1": spaces.Box(0, 5, shape=(2,), dtype=int),
+                "agent2": spaces.Box(0, 5, shape=(2,), dtype=int)
+            }
+        )
+
 
         # two agents with 4 actions each
-        self.action_space = spaces.MultiDiscrete([4] * self.num_agents) [0..3, 0..3]
+        self.action_space = spaces.MultiDiscrete([4] * self.num_agents)
         self.render_mode = render_mode
         
         
 
     def _get_obs(self):
-        return {("agent" + str(i)): arr for i, arr in enumerate(self._agent_locations)}
+        return {"agent1": self._agent_locations[0], "agent2": self._agent_locations[1]}
 
     def step(self, a):
         '''
