@@ -56,6 +56,8 @@ class GridWorldEnv(Env):
 
     def __init__(self, render_mode: Optional[str] = None):
         self.reset()
+        assert self.desc.shape == (6,6), f"Desc must be of shape 6 x 6. Current shape {self.desc.shape}."
+
         self.nrow, self.ncol = self.desc.shape
         self.num_agents = 2
         self._action_to_direction = {
