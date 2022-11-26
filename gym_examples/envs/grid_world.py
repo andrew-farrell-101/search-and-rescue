@@ -104,26 +104,27 @@ class GridWorldEnv(Env):
             # determine the agent position
             direction = self._action_to_direction[i]
             #overwrite wherever the agent was
-            self.desc[self._agent_locations[i]] = b'.'
+            self.desc[self._agent_locations[i][0], self._agent_locations[i][1]] = b'.'
             # set location for agent i ( use clip so we don't go out of bounds )
             self._agent_locations[i] = np.clip(self._agent_locations[i] + direction, 0, self.nrow - 1)
             # if the agent reached a target, reward it with +5
             if (self._agent_locations[i] in np.array(list(zip(*np.where(self.desc == b'V'))))):
                 reward += 5
             #overwrite wherever the agent is
-            self.desc[self._agent_locations[i]] = b'A'
+            
+            self.desc[self._agent_locations[i][0], self._agent_locations[i][1]] = b'A'
         # are there any more targets?
         terminated = b'V' not in self.desc.flatten()
         # agent locations are being used in place of state for the time being
-        return (self._agent_locations, reward, terminated)
+        return (self._get_obs(), reward, terminated, dict())
 
-    def reset(self, seed: Optional[int] = None):
-        desc = ["A...HV",
-                "..V...",
-                ".....V",
-                "....HV",
-                "..V...",
-                ".....A"
+    def reset(self, seed: Optional[int] = None, options = None):
+        desc = ["A...H.",
+                "......",
+                "......",
+                "....H.",
+                "......",
+                "....VA"
                 ]
         self.desc = np.asarray(desc, dtype="c")
         # use the ascii map to locate agents
@@ -145,24 +146,4 @@ class GridWorldEnv(Env):
             return self._render_text()
 
     def _render_text(self):
-        desc = self.desc.tolist()
-        outfile = StringIO()
-
-        row, col = self.s // self.ncol, self.s % self.ncol
-        desc = [[c.decode("utf-8") for c in line] for line in desc]
-        desc[row][col] = utils.colorize(desc[row][col], "red", highlight=True)
-        if self.lastaction is not None:
-            outfile.write(f"  ({['Left', 'Down', 'Right', 'Up'][self.lastaction]})\n")
-        else:
-            outfile.write("\n")
-        outfile.write("\n".join("".join(line) for line in desc) + "\n")
-
-        with closing(outfile):
-            return outfile.getvalue()
-
-    def close(self):
-        if self.window_surface is not None:
-            import pygame
-
-            pygame.display.quit()
-            pygame.quit()
+        print(self.desc)
