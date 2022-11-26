@@ -55,18 +55,11 @@ class GridWorldEnv(Env):
     }
 
     def __init__(self, render_mode: Optional[str] = None):
-        desc = ["A...HV",
-                "..V...",
-                ".....V",
-                "....HV",
-                "..V...",
-                ".....A"
-                ]
-        self.desc = np.asarray(desc, dtype="c")
+        self.reset()
         self.nrow, self.ncol = self.desc.shape
         self.num_agents = 2
         self._action_to_direction = {
-            # uses the same indexing as np arrays ( [0,0] is top left)
+            # uses the same indexing as np arrays ( [0,0] is top left )
             # UP
             0: np.array([-1, 0]),
             # LEFT
@@ -80,10 +73,10 @@ class GridWorldEnv(Env):
         # each observation is the location of A1 and location of A2. Locations of
         # the hazards (H) and points of interest (V) remain constant
         self._agent_locations = np.array(list(zip(*np.where(self.desc == b'A'))))
-        self.observation_space = spaces.Dict({("agent" + str(i)): arr for i, arr in enumerate(self._agent_locations)})
+        self.observation_space = spaces.Dict({("agent" + str(i + 1)): arr for i, arr in enumerate(self._agent_locations)})
 
         # two agents with 4 actions each
-        self.action_space = spaces.MultiDiscrete([4] * self.num_agents)
+        self.action_space = spaces.MultiDiscrete([4] * self.num_agents) [0..3, 0..3]
         self.render_mode = render_mode
         
         
@@ -116,7 +109,15 @@ class GridWorldEnv(Env):
         # agent locations are being used in place of state for the time being
         return (self._agent_locations, reward, terminated)
 
-    def reset(self, seed: Optional[int] = None, ):
+    def reset(self, seed: Optional[int] = None):
+        desc = ["A...HV",
+                "..V...",
+                ".....V",
+                "....HV",
+                "..V...",
+                ".....A"
+                ]
+        self.desc = np.asarray(desc, dtype="c")
         # use the ascii map to locate agents
         self._agent_locations = np.array(list(zip(*np.where(self.desc == b'A'))))
         super().reset(seed=seed)
