@@ -73,24 +73,19 @@ class GridWorldEnv(Env):
         # each observation is the location of A1 and location of A2. Locations of
         # the hazards (H) and points of interest (V) remain constant
         self._agent_locations = np.array(list(zip(*np.where(self.desc == b'A'))))
-        # Observations are dictionaries with the agent's and the target's location.
-        # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
-        self.observation_space = spaces.Dict(
-            {
-                "agent1": spaces.Box(0, 5, shape=(2,), dtype=int),
-                "agent2": spaces.Box(0, 5, shape=(2,), dtype=int)
-            }
-        )
+
+        # Observation space is a 4D matrix where the first two places indicate
+        # the location of the first agent and the second two places indicate the
+        # location of the second agent.
+        self.observation_space = spaces.Box(0, 5, shape=(4,), dtype=np.int32)
 
 
         # two agents with 4 actions each
         self.action_space = spaces.MultiDiscrete([4] * self.num_agents)
         self.render_mode = render_mode
-        
-        
 
     def _get_obs(self):
-        return {"agent1": self._agent_locations[0], "agent2": self._agent_locations[1]}
+        return self._agent_locations
 
     def step(self, a):
         '''
@@ -100,19 +95,25 @@ class GridWorldEnv(Env):
         # reward is -1 by default so the model can learn to visit the targets quickly
         reward = -1
         # for each agent
-        for i in range(len(a)):
+        for i, action in enumerate(a):
             # determine the agent position
-            direction = self._action_to_direction[i]
+            direction = self._action_to_direction[action]
+
             #overwrite wherever the agent was
-            self.desc[self._agent_locations[i][0], self._agent_locations[i][1]] = b'.'
+            taidx = tuple(self._agent_locations[i])
+            self.desc[taidx] = b'.'
             # set location for agent i ( use clip so we don't go out of bounds )
             self._agent_locations[i] = np.clip(self._agent_locations[i] + direction, 0, self.nrow - 1)
+
             # if the agent reached a target, reward it with +5
-            if (self._agent_locations[i] in np.array(list(zip(*np.where(self.desc == b'V'))))):
+            victim_locations = np.array(list(zip(*np.where(self.desc == b'V'))))
+            if (any(np.array_equal(self._agent_locations[i], x) for x in victim_locations)):
                 reward += 5
+
             #overwrite wherever the agent is
-            
-            self.desc[self._agent_locations[i][0], self._agent_locations[i][1]] = b'A'
+            taidx = tuple(self._agent_locations[i])
+            self.desc[taidx] = b'A'
+
         # are there any more targets?
         terminated = b'V' not in self.desc.flatten()
         # agent locations are being used in place of state for the time being
@@ -121,10 +122,10 @@ class GridWorldEnv(Env):
     def reset(self, seed: Optional[int] = None, options = None):
         desc = ["A...H.",
                 "......",
-                "......",
+                "..V...",
                 "....H.",
                 "......",
-                "....VA"
+                ".V...A"
                 ]
         self.desc = np.asarray(desc, dtype="c")
         # use the ascii map to locate agents
@@ -132,7 +133,7 @@ class GridWorldEnv(Env):
         super().reset(seed=seed)
         if self.render_mode == "ansi":
             self.render()
-        return self._get_obs()
+        return self._get_obs(), dict()
        
 
     def render(self):
