@@ -131,6 +131,7 @@ class GridWorldEnv(Env):
         super().reset(seed=seed)
         if self.render_mode == "ansi":
             self.render()
+        return self._get_obs()
        
 
     def render(self):

@@ -6,8 +6,10 @@ import gym
 def main():
     env = gym.make('gym_examples/GridWorld-v0')
     state, *_ = env.reset()
-    temrinated = False
-    while not 
+    terminated = False
+    while not terminated:
+        # take random actions
+        state, reward, terminated = env.step(env.action_space.sample())
 
 if __name__ == '__main__':
     main
