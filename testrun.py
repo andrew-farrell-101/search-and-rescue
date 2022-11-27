@@ -6,14 +6,22 @@ import matplotlib.pyplot as plt
 # set up to run on main
 def main():
     env = gym.make('gym_examples/GridWorld-v0')
-    rewards = q_learning(env, num_runs=25, num_episodes=300, alpha= 0.01, gamma=0.95, epsilon=0.1, epsilon_decay=0.98)
-    print(np.mean(rewards, axis=0))
-    
+    rewards = q_learning(env, num_runs=5, num_episodes=500, alpha= 0.1, gamma=0.99, epsilon=0.1)
+    rewards = np.mean(rewards, axis=0)
+    print(rewards)
+    plt.plot(rewards, label="Sum of Rewards")
+    plt.title("Q-Learning - Sum of rewards vs Episodes")
+    plt.xlabel("Episode")
+    plt.ylabel("Sum of Rewards")
+    plt.legend()
+    plt.grid()
+    plt.show()
 
 
-def q_learning(env, num_runs = 50, num_episodes = 50, alpha = 0.01, gamma = 0.95, epsilon = 0.1, epsilon_decay = 0.99):
+def q_learning(env, num_runs = 50, num_episodes = 50, alpha = 0.01, gamma = 0.95, epsilon = 0.1):
     # initialize rewards
     rewards = np.zeros((num_runs, num_episodes))
+    nsteps = np.zeros((num_runs, num_episodes))
     for run in range(num_runs):
         run_epsilon = epsilon
         print(f'Run {run + 1}')
@@ -36,6 +44,7 @@ def q_learning(env, num_runs = 50, num_episodes = 50, alpha = 0.01, gamma = 0.95
                     action = np.unravel_index(np.random.choice(np.flatnonzero(np.isclose(Q[S_idx], np.max(Q[S_idx])))), Q[S_idx].shape)    # break ties
 
                 next_state, reward, terminated, *_ = env.step(action)
+                nsteps[run, episode] += 1
 
                 NS_idx = tuple(next_state.flatten())
                 A_idx = tuple(action)
@@ -45,7 +54,7 @@ def q_learning(env, num_runs = 50, num_episodes = 50, alpha = 0.01, gamma = 0.95
                 S_idx = NS_idx
                 rewards[run][episode] += reward
             # update epsilon
-            run_epsilon = run_epsilon * epsilon_decay
+            run_epsilon *= 1 / np.sum(nsteps[run])
     return rewards
 
 if __name__ == '__main__':

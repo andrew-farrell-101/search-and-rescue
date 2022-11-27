@@ -81,6 +81,8 @@ class GridWorldEnv(Env):
         # location of the second agent.
         self.observation_space = spaces.Box(0, 5, shape=(4,), dtype=np.int32)
 
+        # precompute the locations of the hazards because they're static
+        self.hazard_locations = np.array(list(zip(*np.where(self.desc == b'H'))))
 
         # two agents with 4 actions each
         self.action_space = spaces.MultiDiscrete([4] * self.num_agents)
@@ -105,12 +107,20 @@ class GridWorldEnv(Env):
             taidx = tuple(self._agent_locations[i])
             self.desc[taidx] = b'.'
             # set location for agent i ( use clip so we don't go out of bounds )
-            self._agent_locations[i] = np.clip(self._agent_locations[i] + direction, 0, self.nrow - 1)
+            next_location = np.clip(self._agent_locations[i] + direction, 0, self.nrow - 1)
+
+            victim_locations = np.array(list(zip(*np.where(self.desc == b'V'))))
 
             # if the agent reached a target, reward it with +5
-            victim_locations = np.array(list(zip(*np.where(self.desc == b'V'))))
-            if (any(np.array_equal(self._agent_locations[i], x) for x in victim_locations)):
+            if (any(np.array_equal(next_location, x) for x in victim_locations)):
+                self._agent_locations[i] = next_location
                 reward += 5
+            # if the agent bumped into a hazard, give it a -2 reward
+            elif (any(np.array_equal(next_location, x) for x in self.hazard_locations)):
+                reward += -2
+            # otherwise, move the agent to the next location
+            else:
+                self._agent_locations[i] = next_location
 
             #overwrite wherever the agent is
             taidx = tuple(self._agent_locations[i])
@@ -124,10 +134,10 @@ class GridWorldEnv(Env):
     def reset(self, seed: Optional[int] = None, options = None):
         desc = ["A...H.",
                 "......",
-                "..V...",
+                ".HV...",
                 "....H.",
                 "......",
-                ".V...A"
+                ".V.H.A"
                 ]
         self.desc = np.asarray(desc, dtype="c")
         # use the ascii map to locate agents
