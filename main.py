@@ -7,7 +7,10 @@ def main():
     env = gym.make('gym_examples/GridWorld-v0')
     rewards = q_learning(env, num_runs=50, num_episodes=1000, alpha= 0.1, gamma=0.99, epsilon=0.1)
     rewards = np.mean(rewards, axis=0)
+<<<<<<< HEAD
     print(rewards)
+=======
+>>>>>>> 25e74a651b8d1eef0657fc1d7eb5e1411ee7a709
     plt.plot(rewards)
     plt.title("Q-Learning - Sum of rewards vs Episodes")
     plt.xlabel("Episode")
