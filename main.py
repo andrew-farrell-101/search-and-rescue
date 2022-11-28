@@ -1,4 +1,5 @@
 import gym
+import gym_examples
 import numpy as np
 import matplotlib.pyplot as plt
 
