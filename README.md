@@ -1,22 +1,39 @@
-# Gym Examples
-Some simple examples of Gym environments and wrappers.
-For some explanations of these examples, see the [Gym documentation](https://gymnasium.farama.org).
+# Multi-Agent Search and Rescue using a Central Control Agent with Tabular Q-Learning
 
-### Environments
-This repository hosts the examples that are shown [on the environment creation documentation](https://gymnasium.farama.org/tutorials/environment_creation/).
-- `GridWorldEnv`: Simplistic implementation of gridworld environment
+<hr>
 
-### Wrappers
-This repository hosts the examples that are shown [on wrapper documentation](https://gymnasium.farama.org/api/wrappers/).
-- `ClipReward`: A `RewardWrapper` that clips immediate rewards to a valid range
-- `DiscreteActions`: An `ActionWrapper` that restricts the action space to a finite subset
-- `RelativePosition`: An `ObservationWrapper` that computes the relative position between an agent and a target
-- `ReacherRewardWrapper`: Allow us to weight the reward terms for the reacher environment
+## Getting Started
 
-### Contributing
-If you would like to contribute, follow these steps:
-- Fork this repository
-- Clone your fork
-- Set up pre-commit via `pre-commit install`
+### Prerequisites
 
-PRs may require accompanying PRs in [the documentation repo](https://github.com/Farama-Foundation/Gymnasium/tree/main/docs).
+To run the code, you will need Python 3.10 or higher and pip.
+
+### Cloning the repo
+
+Clone the repo and setup the environment with:
+
+```
+git clone https://github.com/andrew-farrell-101/search-and-rescue
+cd search-and-rescue
+python -m venv .env
+source .env/bin/activate
+pip install -r requirements.txt
+```
+
+If you are on Windows, try activating the virtual environment using:
+
+```
+source .env/Scripts/activate
+```
+
+### Running the program
+
+Run the program using the following command:
+
+```
+python main.py
+```
+
+The output of the program is a graph of the sum of rewards over the episodes.
+
+![](img/sum_of_rewards.png)
