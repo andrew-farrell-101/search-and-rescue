@@ -18,6 +18,7 @@ cd search-and-rescue
 python -m venv .env
 source .env/bin/activate
 pip install -r requirements.txt
+pip install -e .
 ```
 
 If you are on Windows, try activating the virtual environment using:
